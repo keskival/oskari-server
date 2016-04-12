@@ -24,7 +24,7 @@ public class SotkaStatisticalDatasourcePlugin implements StatisticalDatasourcePl
     private SotkaIndicatorsParser indicatorsParser = null;
     private SotkaConfig config = new SotkaConfig();
 
-    private final static String CACHE_KEY_PREFIX = "oskari_sotka_get_indicators_";
+    private final static String CACHE_KEY = "oskari_sotka_get_indicators:";
 
     /**
      * Maps the SotkaNET layer identifiers to Oskari layers.
@@ -38,7 +38,7 @@ public class SotkaStatisticalDatasourcePlugin implements StatisticalDatasourcePl
     @Override
     public List<? extends StatisticalIndicator> getIndicators(User user) {
         try {
-            final String cachedData = JedisManager.get(CACHE_KEY_PREFIX + getBaseURL());
+            final String cachedData = JedisManager.get(CACHE_KEY + getBaseURL());
 
             if (cachedData != null) {
                 return indicatorsParser.parse(cachedData, layerMappings);
@@ -51,7 +51,7 @@ public class SotkaStatisticalDatasourcePlugin implements StatisticalDatasourcePl
             request.setBaseURL(getBaseURL());
             String jsonResponse = request.getData();
 
-            JedisManager.setex(CACHE_KEY_PREFIX + getBaseURL(), JedisManager.EXPIRY_TIME_DAY, jsonResponse);
+            JedisManager.setex(CACHE_KEY + getBaseURL(), JedisManager.EXPIRY_TIME_DAY, jsonResponse);
             // We will later need to add the year range information to the preliminary information using separate requests.
             return indicatorsParser.parse(jsonResponse, layerMappings);
         } catch (APIException e) {
